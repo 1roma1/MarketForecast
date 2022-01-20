@@ -4,18 +4,28 @@ body {
     background-color: #F7F7F7;
 }
 
-.wrapper{
-    background-color: #222222,
-    font-family: "Lato",
-    color: white,
-    text-align: center,
-    margin: 4px auto
-}
+.dropdown {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  .dropdown select {
+    font-size: inherit;
+    padding: .5em;
+    padding-right: 10em; 
+    border-radius: 3px;
+    text-indent: 0.01px;
+  }
 
 .header {
     background-color: #222222;
     height: 178px;
     padding: 16px 0 0 0;
+    font-family: 'Lato'; 
+    color: white;
+    text-align: center;
+    margin: 4px auto;
 }
 
 .header img {
@@ -75,29 +85,8 @@ body {
     box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.18);
 }
 
-.Select-control {
-    width: 256px;
-    height: 48px;
-}
-
-.Select--single > .Select-control .Select-value, .Select-placeholder {
-    line-height: 48px;
-}
-
-.Select--multi .Select-value-label {
-    line-height: 32px;
-}
-
 .menu-title {
     margin-bottom: 6px;
     font-weight: bold;
     color: #079A82;
 }
-
-.navbar-header {
-    float: left;
-    padding: 15px;
-    text-align: center;
-    width: 100%;
-}
-.navbar-brand {float:none;}
