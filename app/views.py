@@ -1,26 +1,31 @@
 import pandas as pd
-import yfinance as yf
 from datetime import datetime, timedelta
+
 from flask import (
     Blueprint, render_template, request, jsonify
 )
 from .forecaster import Forecaster
+from .data_load import get_hist_prices
 
 bp = Blueprint('', __name__)
 forecaster = Forecaster()
 
 
-def get_hist_prices(ticker):
-    tickers_map = {'BTC': 'BTC-USD', 'ETH': 'ETH-USD', 'S&P500': '^GSPC', 'AAPL': 'AAPL', 
-                   'MSFT': 'MSFT', 'AMZN': 'AMZN', 'GOOG': 'GOOG', 'TSLA': 'TSLA'}
-    yf_ticker = yf.Ticker(tickers_map[ticker])
-    prices = yf_ticker.history(start=datetime.now()-timedelta(100), end=datetime.now()-timedelta(1))
-    prices = prices.reset_index()
-    prices['Date'] = pd.to_datetime(prices['Date'], format='%Y-%m-%d')
-    prices = prices.set_index('Date')
-    prices = prices.interpolate()
+def prep_data(prices, predicted_price):
+    prices['Predicted'] = None
+    prices.iloc[-1, prices.columns.get_loc('Predicted')] = prices.iloc[-1, prices.columns.get_loc('Close')]
+    prices = pd.concat([prices[['Close', 'Predicted']], 
+                        pd.DataFrame([[None, predicted_price]], 
+                                     columns=['Close', 'Predicted'], 
+                                     index=[datetime.now()+timedelta(1)])], 
+                        ignore_index=False)
 
-    return prices[['Open', 'High', 'Low', 'Close', 'Volume']]
+    prices = prices.reset_index()
+    prices['Date'] = prices['index'].map(pd.Timestamp.date).map(str)
+    prices = prices[['Date', 'Close', 'Predicted']].values.tolist()
+    prices[-1][1] = None
+
+    return prices
 
 @bp.route('/')
 def index():
@@ -33,17 +38,7 @@ def get_ticker_data():
         model = request.args.get('model', 1, type=str)
 
         prices = get_hist_prices(ticker)
-
-        forecast_price = forecaster.forecast(prices, ticker, model)
-        prices['Predicted'] = None
-        prices.iloc[-1, prices.columns.get_loc('Predicted')] = prices.iloc[-1, prices.columns.get_loc('Close')]
-
-        prices = pd.concat([prices[['Close', 'Predicted']], pd.DataFrame([[None, forecast_price]], columns=['Close', 'Predicted'], index=[datetime.now()])], ignore_index=False)
-
-        prices = prices.reset_index()
-        prices['Date'] = prices['index'].map(pd.Timestamp.date).map(str)
-
-        prices = prices[['Date', 'Close', 'Predicted']].values.tolist()
-        prices[-1][1] = None
+        predicted_price = forecaster.forecast(prices, ticker, model)
+        prices = prep_data(prices, predicted_price)
 
     return jsonify({'prices': prices})
