@@ -1,5 +1,5 @@
-# Market Forecast Web App #
+# Market Forecast #
 
 Website Deployed: [Link](https://market-forecast.herokuapp.com/)
 
-Data Science Project: [Link](https://github.com/1roma1/MarketForecast)
+Predict cryptocurrencies and stocks using historical prices downloaded from Yahoo Finance.
